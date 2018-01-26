@@ -16,6 +16,9 @@ ledGreen = default_green
 ledBlue = default_blue
 -- How long should it take to change from current to target value, in ms.
 ledFadeTime = default_fadetime
+-- Store the fading state
+ledFading = false
+ledFadingState = { r=255, g=255, b=255 }
 -- *** GLOBAL VARIABLES END ***
 
 local ledTarget = { r=0, g=0, b=0 }
@@ -120,6 +123,30 @@ function ledsTimerFunc()
         if isZeroRGB(ledCurrent) then
             -- If we reached the "off" state, turn the PWM off completely.
             ledsSwitch(false)
+        end
+        -- When fading is set, start/continue fading
+        if ledFading then
+      		  if ( equalRGB(ledFadingState, {r=255,g=255,b=255}) ) then
+        			  ledFadingState = {r=255,g=255,b=0}
+            elseif ( equalRGB(ledFadingState, {r=255,g=255,b=0}) ) then
+                ledFadingState = {r=255,g=0,b=0}
+            elseif ( equalRGB(ledFadingState, {r=255,g=0,b=0}) ) then
+                ledFadingState = {r=255,g=0,b=255}
+            elseif ( equalRGB(ledFadingState, {r=255,g=0,b=255}) ) then
+                ledFadingState = {r=0,g=0,b=255}
+            elseif ( equalRGB(ledFadingState,  {r=0,g=0,b=255}) ) then
+                ledFadingState = {r=0,g=255,b=255}
+            elseif ( equalRGB(ledFadingState,  {r=0,g=255,b=255}) ) then
+                ledFadingState = {r=0,g=255,b=0}
+            else 
+                debugPrint(5, "(Continue)Fading... Starting with white." )
+    			      ledFadingState = {r=255,g=255,b=255}
+    		    end
+            -- debugPrint(3, "ledFadingState: " .. ledFadingState.r.toString())
+    		    ledRed = ledFadingState.r
+  		      ledGreen = ledFadingState.g
+	      	  ledBlue = ledFadingState.b
+      		  ledsUpdate()
         end
     end
 end
