@@ -37,12 +37,18 @@ local function mqttPublishFadeTime()
     mqttPublish("/fadetime/status",  string.format("%d", ledFadeTime), 1, 1)
 end
 
+-- Publish if fading is set to on
+local function mqttPublishFading()
+    mqttPublish("/fading/status",  bool2str(ledFading), 1, 1)
+end
+
 -- Publish all data (called on reconnect)
 local function mqttPublishAll()
     mqttPublishState()
     mqttPublishBrightness()
     mqttPublishRGB()
     mqttPublishFadeTime()
+  	mqttPublishFading()
     mqttPublish("/status",  "connected", 1, 1)
 end
 
@@ -85,6 +91,11 @@ local function mqttMessage(conn, topic, data)
             ledsUpdate()
             mqttPublishRGB()
         end
+    elseif param == "fading" then
+        ledFading = str2bool(data)
+        blinkieFlash()
+        ledsUpdate()
+        mqttPublishFading()
     else
       debugPrint(0, "MQTT: Unknown 'set' parameter: " .. param)
     end
